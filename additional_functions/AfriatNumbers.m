@@ -1,0 +1,46 @@
+function [V,Lambda]=AfriatNumbers(p,q);
+V = NaN*ones(1,size(p,2));
+Lambda = V;
+I = 1:size(p,2); 
+B = [];
+while (isempty(I)==0);
+    clc;
+    m = Maximal(I,p,q);
+    M = NaN*ones(length(I),length(I));
+	for i=1:length(I);
+        for j=1:length(I);
+            M(i,j)=(p(:,I(i))'*q(:,I(i))>=p(:,I(i))'*q(:,I(j)));
+        end;  
+    end;
+    for i=1:length(I);                              
+        for j=1:length(I);                          
+            M(i,:) = max([M(i,:); M(i,j).*M(j,:)]);
+        end;                                    
+    end;  
+    E=I(find(M(:,find(I==m))==1));
+    
+    
+    if isempty(B);
+        V(m)=1;Lambda(m)=1;
+        V(E)=V(m); Lambda(E)=Lambda(m);
+        I = setdiff(I,E); B = union(B,E); 
+    else;
+        tmp=NaN*ones(length(E),length(B));
+        for i=1:length(E);
+            for j=1:length(B);
+                tmp(i,j)=min([V(B(j))+Lambda(B(j))*p(:,B(j))'*(q(:,E(i))-q(:,B(j))) ; V(B(j))]);
+            end;
+        end;
+        V(m)=min(min(tmp));
+        tmp=NaN*ones(length(E),length(B));
+        for i=1:length(E);
+            for j=1:length(B);
+                tmp(i,j)=max([(V(B(j))-V(m))/(p(:,E(i))'*(q(:,B(j))-q(:,E(i)))) ; 1]);
+            end;
+        end;
+        Lambda(m)=max(max(tmp));
+        V(E)=V(m); Lambda(E)=Lambda(m);
+        I = setdiff(I,E); B = union(B,E); 
+    end;
+end;
+
